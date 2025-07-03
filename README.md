@@ -1,11 +1,24 @@
 # ASTR406
 data analysis with astropy tools
 
-The whole repo is a collection of assignments in UIUC ASTR 406. 
+The whole repo is a collection of assignments in UIUC ASTR 406. This course mainly focuses on galaxy evolution. First, there would be an introduction of what asstropy is, then the description of each homework and code display.
+
+## Astropy
+
+Astropy is a free and open-source Python package for astronomy research, first released in 2011. Developed and maintained by a global community, it provides tools for coordinate transformations, file reading, unit manipulation, and data modeling. Managed by a Coordination Committee, Astropy has over 280,000 lines of code and is supported by donations and institutions like the Space Telescope Science Institute. It is included in major Python distributions.
+
 
 ## Homework 1
 
 ### 1. Generate three figures that demonstrate the effect on the Schechter function for a range of α, M ∗, and n∗, varied separately. Plot the Schechter function with absolute magnitude on the x-axis, over a galaxy absolute magnitude range of −16 > M > −24. Choose parameters and plot parameters such that the effect of changing each parameter can be clearly seen. Be sure to label your axes and use a legend. Plot the results such that the x-axis shows luminosity increasing to the right.
+
+The Schechter luminosity function ϕ provides an approximation of the abundance of galaxies in a luminosity interval [L + dL]. The luminosity function has units of a number density n per unit luminosity and is given by a power law with an exponential cut-off at high luminosity.
+
+<img width="604" alt="Screenshot 2025-07-01 at 15 47 18" src="https://github.com/user-attachments/assets/e777f778-d7a4-47f4-9075-b24fdc611ee3" />
+
+Note that because the magnitude system is logarithmic, the power law has logarithmic slope α+1
+ This is why a Schechter function with α = −1 is said to be flat.
+
 
 ```python
 import numpy as np
@@ -117,4 +130,64 @@ plt.legend()
 ```
 <img width="874" alt="Screenshot 2025-06-29 at 22 11 00" src="https://github.com/user-attachments/assets/cdb0af12-349e-4f41-9107-2ea34f4694a0" />
 
+
+## Homework 2
+
+In order to measure how bright these stars are, subtract off an estimate of the background
+noise using np.nanmedian for each image. Print the value of the background noise for
+each image.
+
+```python
+with fits.open('iaby02x7q_drc.fits') as hdu:
+f606 = hdu[1].data
+f606_hdr = hdu[1].header
+with fits.open('iaby02x4q_drc.fits') as hdu:
+f336 = hdu[1].data
+f336_hdr = hdu[1].header
+[3]: print(np.nanmedian(f606))
+print(np.nanmedian(f336))
+f606 -= np.nanmedian(f606)
+f336 -= np.nanmedian(f336)
+
+
+0.16780604
+0.0048121833
+```
+Use DAOStarFinder from the photutils package to generate a list of sources the F606
+filter image (filename iaby02x7q drc.fits). Print a subset of your source table.
+
+```python
+image = f606
+bkg_sigma = np.nanstd(image)
+daofind = DAOStarFinder(fwhm=2.0, threshold=2.0 * bkg_sigma)
+sources = daofind(image)
+for col in sources.colnames:
+sources[col].info.format = '%.8g' # for consistent table output (optional)
+print(sources)
+
+id xcentroid ycentroid sharpness roundness1 roundness2 npix sky peak
+flux mag
+---- --------- --------- ---------- ------------- ------------- ---- ---
+--------- --------- ------------
+1 3.0406029 18.694236 0.72781123 0.52785188 0.4277751 25 0
+183.37491 1.1115466 -0.11481922
+2 226.13532 18.881369 0.76138002 0.20785956 0.18362588 25 0
+263.76447 1.7093722 -0.58209157
+3 151.70402 29.103142 0.66134122 0.090862155 0.065903529 25 0
+188.86624 1.2204299 -0.2162821
+4 95.540585 32.573552 0.74137947 0.69706047 0.19501715 25 0
+1325.764 6.2833886 -1.9954848
+5 413.48356 38.77244 0.68142404 0.35486788 0.046435209 25 0
+189.00046 1.1868695 -0.18600743
+6 194.44305 43.49156 0.79763919 0.77449512 0.53015776 25 0
+1158.8774 5.2824454 -1.8070875
+7 131.0649 47.776011 0.72162032 0.28290766 0.23585871 25 0
+297.05051 1.9370632 -0.71785949
+8 344.51341 48.94181 0.67204465 0.16990086 0.14771862 25 0
+222.64236 1.4626118 -0.41282268
+9 277.00845 49.778098 0.74608099 0.17947522 0.11080877 25 0
+212.85767 1.3805077 -0.35009709
+10 493.85381 52.179783 0.7147804 -0.011016716 -0.066366939 25 0
+2
+```
 
